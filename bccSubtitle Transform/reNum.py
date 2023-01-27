@@ -8,11 +8,23 @@ i = 1
 
 def timeCheck(timeLine):
     spaceLoc = [13, 17, 30]
+    numRange = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    figureRange = [':', ',', '-', '>', '\n']
     ii = 0
+    check = 1
+    numTimes = 0
     for eachStr in timeLine:
         ii += 1
         if eachStr == ' ' and (ii not in spaceLoc):
-            print("error in ",timeLine,end='')
+            check = 0
+        if (eachStr not in numRange) and (eachStr not in figureRange):
+            check = 0
+        if eachStr in numTimes:
+            numTimes += 1
+    if numTimes != 18:
+        check = 0
+    if check == 0:
+        print("error in ", timeLine, end='')
 
 
 for iLine in a:
