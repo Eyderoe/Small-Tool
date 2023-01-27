@@ -4,7 +4,7 @@
 > funcTrail a(screen,0) // screen为窗口宽度,1表示采用科学计数法\
 > a.load (listX, listY, listLength) // listLength >= screen+1 \
 > a.show ()
-# bccSubtitle Transform
+# bccSubtitle Transform 字幕转换
 b站自动翻译弹幕转换
 > bbc to str: 转换bcc格式到srt\
 > reNum: 重新进行字幕编号，并检查时间轴错误
