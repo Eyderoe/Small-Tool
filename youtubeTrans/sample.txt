@@ -1,0 +1,47 @@
+WEBVTT
+Kind: captions
+Language: en
+
+00:04:53.670 --> 00:06:51.310 align:start position:0%
+ 
+[Music]
+
+00:06:51.310 --> 00:06:51.320 align:start position:0%
+ 
+ 
+
+00:06:51.320 --> 00:06:53.960 align:start position:0%
+ 
+hi<00:06:52.320><c> I'm</c><00:06:52.590><c> Alex</c><00:06:52.980><c> Idris</c><00:06:53.310><c> and</c><00:06:53.520><c> thanks</c><00:06:53.820><c> for</c><00:06:53.910><c> joining</c>
+
+00:06:53.960 --> 00:06:53.970 align:start position:0%
+hi I'm Alex Idris and thanks for joining
+ 
+
+00:06:53.970 --> 00:06:56.300 align:start position:0%
+hi I'm Alex Idris and thanks for joining
+us<00:06:54.300><c> tonight</c><00:06:54.480><c> for</c><00:06:54.900><c> bold</c><00:06:55.140><c> method</c><00:06:55.470><c> live</c><00:06:55.620><c> IFR</c>
+
+00:06:56.300 --> 00:06:56.310 align:start position:0%
+us tonight for bold method live IFR
+ 
+
+00:06:56.310 --> 00:06:58.610 align:start position:0%
+us tonight for bold method live IFR
+we're<00:06:57.090><c> gonna</c><00:06:57.210><c> talk</c><00:06:57.480><c> about</c><00:06:57.690><c> our</c><00:06:58.170><c> nav</c>
+
+00:06:58.610 --> 00:06:58.620 align:start position:0%
+we're gonna talk about our nav
+ 
+
+00:06:58.620 --> 00:07:00.620 align:start position:0%
+we're gonna talk about our nav
+procedures<00:06:59.220><c> and</c><00:06:59.490><c> hopefully</c><00:06:59.970><c> clear</c><00:07:00.270><c> up</c><00:07:00.390><c> some</c>
+
+00:07:00.620 --> 00:07:00.630 align:start position:0%
+procedures and hopefully clear up some
+
+
+
+
+EndedOfFilesMark
