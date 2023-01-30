@@ -25,3 +25,14 @@ def contentJudge(line):
         return [3, contentLine]
     else:  # 不正常时间轴的内容
         return [4, line[:-1]]
+
+
+def deleteSame(old, new):
+    minSize = min(len(old), len(new))
+    # print("old:<{0}>, new:<{1}> ".format(old,new))
+    for i in range(minSize, 0, -1):
+        if old[0 - i:] == new[:i]:
+            if isEmpty(new[i:]) == 0:   # 内容被删完了
+                return -2
+            return new[i:]
+    return -1
