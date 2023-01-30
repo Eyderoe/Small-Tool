@@ -1,43 +1,35 @@
-import youtubeDef as utube
+def isEmpty(iLine):
+    for iWord in iLine:
+        if iWord != ' ' and iWord != '\n':
+            return 1
+    return 0
 
-# isEmpty 查看一行是否为空
-# contentJudge 判断语句类型
 
-originFile = open('sample.txt', 'r')
-srtFile = open('trans.srt', 'w')
-timeLineTimes = 0  # 一个时间轴正常，一个字幕正常
-i = 1
-timeValue = ''
-contentValue = ''
-oldContentValue = ''
-oldStr = ' '
-while True:
-    Line = originFile.readline()
-    returnValue = utube.contentJudge(Line)
-    # print(returnValue, timeLineTimes)
-    if returnValue[0] == 2:
-        break
-    if returnValue[0] == 1:
-        timeLineTimes += 1
-    if returnValue[0] == 1 and timeLineTimes % 2 == 1:  # 一节字幕,时间轴第一次
-        if timeLineTimes != 1:  # 把上一个给写入了
-            if utube.isEmpty(contentValue) == 0:  # 空语句情况
-                continue
+def contentJudge(line):
+    EOFM = "EndedOfFilesMark"
+    if isEmpty(line) == 0:  # 空行
+        return [0]
+    if "-->" in line:  # 时间轴
+        timeLine = line[:29]
+        timeLine = timeLine.replace('.', ',')
+        return [1, timeLine]
+    if EOFM in line:  # 文件尾
+        return [2]
+    if '<' in line:  # 正常时间轴的内容
+        contentLine = line[:-1]
+        while ('<' in contentLine) and ('>' in contentLine):
+            lLoc = contentLine.find('<')
+            rLoc = contentLine.find('>')
+            contentLine = contentLine[:lLoc] + contentLine[rLoc + 1:]
+        contentLine = contentLine[:-3]
+        return [3, contentLine]
+    else:  # 不正常时间轴的内容
+        return [4, line[:-1]]
 
-            # print("old:<{0}>, new:<{1}> ".format(oldStr,contentValue))
-            if utube.deleteSame(oldStr, contentValue) != -1:  # 前后字幕重复情况
-                contentValue = utube.deleteSame(oldStr, contentValue)
-            oldStr = contentValue
-            if utube.isEmpty(contentValue) == 0:
-                continue
 
-            srtFile.write(str(i) + '\n')
-            srtFile.write(timeValue + '\n')
-            srtFile.write(contentValue + "\n\n")
-            i += 1
-        timeValue = returnValue[1]
-        contentValue = ''
-    if returnValue[0] == 4:
-        contentValue += returnValue[1]
-originFile.close()
-srtFile.close()
+def deleteSame(old, new):
+    minSize = min(len(old), len(new))
+    for i in range(minSize, 0, -1):
+        if old[0 - i:] == new[:i]:
+            return new[i:]
+    return -1
