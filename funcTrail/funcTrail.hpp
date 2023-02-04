@@ -1,10 +1,22 @@
 #include <iostream>
-#include <string>
-#include <cstring>
-#include <graphics.h>
+#include "graphics.h"
 #include <cmath>
 
-namespace Trail{
+namespace eyderoe{
+
+long double transMult(long double numy, char mult)
+{
+    if ('k' == mult or 'K'==mult) numy *= 1e+3;
+    else if ('M' == mult) numy *= 1e+6;
+    else if ('G' == mult) numy *= 1e+9;
+    else if ('1' == mult) numy *= 1;
+    else if('m' == mult) numy *= 1e-3;
+    else if('u' == mult) numy *= 1e-6;
+    else if('n' == mult) numy *= 1e-9;
+    else if('p' == mult) numy *= 1e-12;
+    else std::cout << "unrecognized unit: " << mult << std::endl;
+    return numy;
+}
 
 std::string cutString(std::string str,int cutLength)
 {
@@ -75,7 +87,7 @@ class funcTrail
         int load(long double *, long double *, long long);
         int show();
 };
-funcTrail::funcTrail(int x , int mode)
+funcTrail::funcTrail(int x , int mode=0)
 {
     screenX = x;
     screenY = x * 0.75;
