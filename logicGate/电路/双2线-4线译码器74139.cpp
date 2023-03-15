@@ -1,0 +1,12 @@
+eyderoe::logicGate ST(0), A0(0), A1(0);
+eyderoe::logicGate Y0(13), Y1(13), Y2(13), Y3(13);
+ST.setOuput(1, &Y0, true, 1, &Y1, true);
+ST.setOuput(1, &Y2, true, 1, &Y3, true);
+Y0.setInput(2, &A0, true, 3, &A1, true);
+Y1.setInput(2, &A0, false, 3, &A1, true);
+Y2.setInput(2, &A0, true, 3, &A1, false);
+Y3.setInput(2, &A0, false, 3, &A1, false);
+eyderoe::logicGate * input[] = {&ST,&A0,&A1};
+eyderoe::logicGate * output[] = {&Y0,&Y1,&Y2,&Y3};
+std::cout << "ST A0 A1 | Y0 Y1 Y2 Y3" << std::endl;
+eyderoe::truthTable(input,3,output,4);
