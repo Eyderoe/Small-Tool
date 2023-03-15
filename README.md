@@ -17,3 +17,5 @@ b站自动翻译弹幕转换
 # pyFile 文件操作
 仿python文件操作\
 摆烂ing
+# logicGate 逻辑门电路
+用逻辑门实现局部电路
