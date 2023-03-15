@@ -14,3 +14,6 @@ b站自动翻译弹幕转换
 加入了令人振奋的新功能 - 删除重复语段
 > youtubeTransform 主程序\
 > youtubeDef 文件尾设置及相关函数
+# pyFile 文件操作
+仿python文件操作\
+摆烂ing
