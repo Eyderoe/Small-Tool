@@ -6,12 +6,25 @@ const int maxPinInput = 4;
 
 class logicGate
 {
+        struct pinIn
+        { //还是应该弄成一个结构体的
+            bool inputValue{};
+            logicGate *inputClass = nullptr;
+            bool inputOpposite = false;
+        };
+        struct pinOut
+        {   //程序应该不会大改，就这样吧
+            bool outputValue{};
+            logicGate **outputList{};
+            int outputNum{};
+            int outputMax{};
+        };
     private:
         bool inputValue[maxPinInput]{};
         logicGate *inputClass[maxPinInput]{}; //每个端口输入唯一
         bool inputOpposite[maxPinInput]{false};
         bool output{};
-        logicGate **outputList{};   //每个元件输出不唯一
+        logicGate **outputList= nullptr;   //每个元件输出不唯一
         int outputNum{};
         int outputMax{};
         int type{};
@@ -22,11 +35,13 @@ class logicGate
         int addOutput (logicGate *to);
     public:
         logicGate (int type, bool pinA, bool pinB, bool pinC, bool pinD);
+        ~logicGate ();
         bool getOutput () const;
         int setInput (int pin, bool value);
         int setInput (int pin, logicGate *from, bool isOpposite);
         int setInput (const int *pinList, logicGate **fromList, const bool *isOppositeList, int num);
         int setInput (int pin, logicGate *from, bool isOpposite, int pin_2, logicGate *from_2, bool isOpposite_2);
+        int setOuput (int pin, logicGate *to, bool isOpposite, int pin_2, logicGate *to_2, bool isOpposite_2);
 };
 logicGate::logicGate (int type, bool pinA = true, bool pinB = true, bool pinC = true, bool pinD = true)
 {
@@ -76,6 +91,9 @@ int logicGate::fresh ()
         case 11:output = !(!(inputValue[0] && inputValue[1]) && !(inputValue[2] && inputValue[3]));
             break;
         case 12:output = !(!(inputValue[0] || inputValue[1]) || !(inputValue[2] || inputValue[3]));
+            break;
+            //13三端与非
+        case 13:output = (inputValue[0] && inputValue[1]) && inputValue[2];
             break;
     }
     for (int i = 0 ; i < outputNum ; ++i) {
@@ -176,7 +194,12 @@ int logicGate::setInput (int pin, logicGate *from, bool isOpposite, int pin_2, l
     from_2->addOutput(this);
     fresh();
     return 0;
-
+}
+int logicGate::setOuput (int pin, logicGate *to, bool isOpposite, int pin_2, logicGate *to_2, bool isOpposite_2)
+{
+    to->setInput(pin, this, isOpposite);
+    to_2->setInput(pin_2, this, isOpposite_2);
+    return 0;
 }
 int logicGate::addOutput (logicGate *to)
 {
@@ -195,10 +218,14 @@ int logicGate::addOutput (logicGate *to)
     outputNum += 1;
     return 0;
 }
+logicGate::~logicGate ()
+{
+    delete[] outputList;
+}
 
 int truthTable (logicGate **input, int inputNum, logicGate **output, int outputNum)
 {
-    // 只更改1号端口
+// 只更改1号端口
     int caseNum = 1, caseNum_copy, base;  // 排列组合方式，最大表示的数为case-1，base每次输入端表示的数
     for (int i = 0 ; i < inputNum ; ++i) {
         caseNum *= 2;
