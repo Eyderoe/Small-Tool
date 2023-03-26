@@ -50,6 +50,8 @@ physicsSystem::physicsSystem (int screenX)
 }
 int physicsSystem::addPoint (massPoint point)
 {
+    point.vol.x *= 1e+8;
+    point.vol.y *= 1e+8;
     pointList.push_back(point);
     if (point.mas <= 0)
         std::cerr << "error in mass";
