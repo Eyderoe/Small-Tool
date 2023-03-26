@@ -6,8 +6,7 @@ a class for calculate complex num and impedance in circuit
 >``virnum('r',5.1,'1')`` _means 5.1ohm resistor_
 #### basic operation
 ``virnum a(1,2)``
-> + - * / ^\
-> Im Re
+> ``+ - * / Im Re ln() exp()``
 #### other functions
 ``virnum a(1,2)``\
 ``virnum b('l',20,'u',10,'k')``
