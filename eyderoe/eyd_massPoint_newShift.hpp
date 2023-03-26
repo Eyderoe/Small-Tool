@@ -20,7 +20,7 @@ class physicsSystem
 {
         struct location { long double x;long double y; };
     private:
-        int mode;
+        int mode;   // 1为显示轨迹
         int screenX;    // 屏幕宽度
         int *colorList = nullptr;   // 质点颜色
         int colorNum;   // 预设颜色数量
@@ -48,7 +48,7 @@ class physicsSystem
 };
 physicsSystem::physicsSystem (int screenX, int mode = 0)
 {
-    this->mode = mode;  // 1为显示轨迹
+    this->mode = mode;  
     this->screenX = screenX;
     backGroundColor = 0x9b9c8d;
     precision = 1e-12;
@@ -122,6 +122,7 @@ long double physicsSystem::calculateF (long double r, long double m1, long doubl
 }
 int physicsSystem::calculateDeltaV (long double dX, long double dY, long double r, long double f, massPoint &A) const
 {
+    // 一般情况精度不会损失。a在1e-6，deltaV在1e-1
     if (!A.movable)
         return 1;
     long double a;
