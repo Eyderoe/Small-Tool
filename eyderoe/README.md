@@ -32,7 +32,6 @@ a class for calculate complex num and impedance in circuit
 > ``四输入`` 8与或非 9与或 10或与 11与非-与非 12或非-或非\
 > ``自定义`` 其他类型逻辑门
 #### 操作
->``logicGate (int type, bool pinA=true, ...)`` 类型，初始值\
 >``getOutput ()`` 获取输出值\
 >``setInput (int pin, bool value)`` 输入值\
 >``setInput (int pin, logicGate *frombool, bool isOpposite=false)`` 连接到其他元件的输出\
