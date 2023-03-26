@@ -5,18 +5,9 @@ a class for calculate complex num and impedance in circuit
 >``virnum('c',20,'p',10,'k')`` _means 20pF capacitor in 10K(Hz) circuit_\
 >``virnum('r',5.1,'1')`` _means 5.1ohm resistor_
 #### basic operation
-``virnum a(1,2)``\
-``virnum b(2,3)``
->``a + b`` , ``a += b`` , ``a * b`` , ``a *= b``\
->``a - b`` , ``a -= b`` , ``a / b`` , ``a /= b``\
->``a ^ (int)`` , ``a ^= (int)``\
->``a || b`` _means a parallel with b (in circuit)_\
->``a.Re()`` , ``a.Im()``\
->``std::cout << a << b``
-#### scientific
 ``virnum a(1,2)``
->``a.Exp()`` _Exp(Z) = e^x (cos(y)+isin(y))_\
->``a.ln()`` _ln(Z) = ln|Z| + i argZ_
+> + - * / ^\
+> Im Re
 #### other functions
 ``virnum a(1,2)``\
 ``virnum b('l',20,'u',10,'k')``
@@ -46,7 +37,5 @@ a class for calculate complex num and impedance in circuit
 >``getOutput ()`` 获取输出值\
 >``setInput (int pin, bool value)`` 输入值\
 >``setInput (int pin, logicGate *frombool, bool isOpposite=false)`` 连接到其他元件的输出\
->``setInput (const int *pinList, logicGate **fromList, const bool *isOppositeList, int num)`` 数组初始化\
->``setInput (int pin, logicGate *from, bool isOpposite, int pin_2, logicGate *from_2, bool isOpposite_2)`` 同时设置两个
 # **massPoint**
 质点间万有引力模拟
