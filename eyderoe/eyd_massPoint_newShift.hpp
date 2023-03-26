@@ -32,10 +32,9 @@ class physicsSystem
 
         int makeScreen () const;
         int calculate ();
-        int makeSpot ();
         int makeCopyList ();    // 初始化轨迹列表
         int makeCopy (); //每次计算后填写轨迹列表
-        int removePoint ();  //移除最后一个轨迹点，还是解决不了问题，方案不行
+        int removePoint ();  //移除最后一个轨迹点，还是解决不了问题，方案不行。现合并了makeSpot()
         static inline int BGRConverter (int RGB);
         static inline long double calculateR (long double x, long double y);
         static inline long double calculateF (long double r, long double m1, long double m2);
@@ -53,7 +52,7 @@ physicsSystem::physicsSystem (int screenX)
     precision = 1e-12;
     colorNum = 12;
     timer = 0;
-    copyNum = 100;
+    copyNum = 3;
     // 立春 雨水 谷雨 小暑 立秋 小寒
     colorList = new int[colorNum]{0xfff799, 0xecd452, 0xf9d3e3, 0xdd7694, 0xdcc7e1, 0xa67eb7, \
                                 0xf5b087, 0xef845d, 0x88abda, 0x5976ba, 0xa4c9cc, 0x509296};
@@ -86,7 +85,6 @@ int physicsSystem::makeScreen () const
         calculate();
         makeCopy();
         removePoint();
-        makeSpot();
     }
 }
 int physicsSystem::calculate () //计算每个点的相互作用
@@ -102,18 +100,6 @@ int physicsSystem::calculate () //计算每个点的相互作用
             calculateDeltaV(deltaX, deltaY, r, f, pointList[i]);    //计算速度增量 位置增量
             calculateDeltaV(-deltaX, -deltaY, r, f, pointList[j]);
         }
-    }
-    return 0;
-}
-int physicsSystem::makeSpot ()
-{
-    int color, loc;
-    loc = timer - 1;
-    for (int i = 0 ; i < pointList.size() ; ++i) {
-        color = BGRConverter(colorList[i]);
-        setfillcolor(color);
-        setlinecolor(color);
-        fillcircle((int) pointTrailList[i * copyNum + loc].x, (int) pointTrailList[i * copyNum + loc].y, 5);
     }
     return 0;
 }
@@ -171,10 +157,16 @@ int physicsSystem::removePoint ()
     loc = timer;    // makeCopy()最后timer+1
     if (timer == copyNum)
         loc = 0;
+    int color, locted;
+    locted = timer - 1;
     for (int i = 0 ; i < pointList.size() ; ++i) {
         setfillcolor(backGroundColor);
         setlinecolor(backGroundColor);
         fillcircle((int) pointTrailList[i * copyNum + loc].x, (int) pointTrailList[i * copyNum + loc].y, 5);
+        color = BGRConverter(colorList[i]);
+        setfillcolor(color);
+        setlinecolor(color);
+        fillcircle((int) pointTrailList[i * copyNum + locted].x, (int) pointTrailList[i * copyNum + locted].y, 5);
     }
     return 0;
 }
