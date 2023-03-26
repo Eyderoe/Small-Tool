@@ -125,6 +125,8 @@ int physicsSystem::calculateDeltaV (long double dX, long double dY, long double 
     long double a;
     // 步长的加速度
     a = f / A.mas;
+    if (a * precision * precision < LDBL_EPSILON)
+        std::cerr << "MasterCaution! PrecisionLost" << std::endl;
     a *= precision;
     // 步长的速度
     A.vol.x += a * (dX / r);
