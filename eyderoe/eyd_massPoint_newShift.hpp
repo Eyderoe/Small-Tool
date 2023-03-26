@@ -20,6 +20,7 @@ class physicsSystem
 {
         struct location { long double x;long double y; };
     private:
+        int mode;
         int screenX;    // 屏幕宽度
         int *colorList = nullptr;   // 质点颜色
         int colorNum;   // 预设颜色数量
@@ -40,19 +41,23 @@ class physicsSystem
         static inline long double calculateF (long double r, long double m1, long double m2);
         inline int calculateDeltaV (long double dX, long double dY, long double r, long double f, massPoint &A) const;
     public:
-        explicit physicsSystem (int screenX);
+        explicit physicsSystem (int screenX, int mode);
         ~physicsSystem ();
         int addPoint (massPoint point);
         [[noreturn]] void show ();
 };
-physicsSystem::physicsSystem (int screenX)
+physicsSystem::physicsSystem (int screenX, int mode = 0)
 {
+    this->mode = mode;  // 1为显示轨迹
     this->screenX = screenX;
     backGroundColor = 0x9b9c8d;
     precision = 1e-12;
     colorNum = 12;
     timer = 0;
-    copyNum = 3;
+    if (mode == 1)
+        copyNum = 1;
+    else
+        copyNum = 3;
     // 立春 雨水 谷雨 小暑 立秋 小寒
     colorList = new int[colorNum]{0xfff799, 0xecd452, 0xf9d3e3, 0xdd7694, 0xdcc7e1, 0xa67eb7, \
                                 0xf5b087, 0xef845d, 0x88abda, 0x5976ba, 0xa4c9cc, 0x509296};
@@ -122,6 +127,8 @@ int physicsSystem::calculateDeltaV (long double dX, long double dY, long double 
     long double a;
     // 步长的加速度
     a = f / A.mas;
+    if (a * precision * precision < LDBL_EPSILON)
+        std::cerr << "MasterCaution! PrecisionLost" << std::endl;
     a *= precision;
     // 步长的速度
     A.vol.x += a * (dX / r);
@@ -161,9 +168,11 @@ int physicsSystem::removePoint ()
     //移除最后一个点 新增一个点
     for (int i = 0 ; i < pointList.size() ; ++i) {
         color = BGRConverter(colorList[i]);
-        setfillcolor(backGroundColor);
-        setlinecolor(backGroundColor);
-        fillcircle((int) pointTrailList[i * copyNum + loc].x, (int) pointTrailList[i * copyNum + loc].y, 5);
+        if (mode == 0) {
+            setfillcolor(backGroundColor);
+            setlinecolor(backGroundColor);
+            fillcircle((int) pointTrailList[i * copyNum + loc].x, (int) pointTrailList[i * copyNum + loc].y, 5);
+        }
         setfillcolor(color);
         setlinecolor(color);
         fillcircle((int) pointTrailList[i * copyNum + locted].x, (int) pointTrailList[i * copyNum + locted].y, 5);
