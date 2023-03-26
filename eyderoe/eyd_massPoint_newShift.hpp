@@ -153,13 +153,11 @@ int physicsSystem::makeCopy ()
 }
 int physicsSystem::removePoint ()
 {
-    int loc;
+    int loc, color, locted;
     loc = timer;    // makeCopy()最后timer+1
     if (timer == copyNum)
         loc = 0;
-    int color, locted;
     locted = timer - 1;
-
     //移除最后一个点 新增一个点
     for (int i = 0 ; i < pointList.size() ; ++i) {
         color = BGRConverter(colorList[i]);
