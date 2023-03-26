@@ -63,7 +63,7 @@ int physicsSystem::addPoint (massPoint point)
     point.vol.y *= 1e+8;
     pointList.push_back(point);
     if (point.mas <= 0)
-        std::cerr << "error in mass";
+        std::cerr << "error in mass: " << point.mas << std::endl;
     return 0;
 }
 physicsSystem::~physicsSystem ()
@@ -159,11 +159,13 @@ int physicsSystem::removePoint ()
         loc = 0;
     int color, locted;
     locted = timer - 1;
+
+    //移除最后一个点 新增一个点
     for (int i = 0 ; i < pointList.size() ; ++i) {
+        color = BGRConverter(colorList[i]);
         setfillcolor(backGroundColor);
         setlinecolor(backGroundColor);
         fillcircle((int) pointTrailList[i * copyNum + loc].x, (int) pointTrailList[i * copyNum + loc].y, 5);
-        color = BGRConverter(colorList[i]);
         setfillcolor(color);
         setlinecolor(color);
         fillcircle((int) pointTrailList[i * copyNum + locted].x, (int) pointTrailList[i * copyNum + locted].y, 5);
