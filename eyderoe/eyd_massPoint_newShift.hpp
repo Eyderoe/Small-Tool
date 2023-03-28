@@ -28,8 +28,8 @@ class physicsSystem
         int backGroundColor;
         std::vector<massPoint> pointList;   // addPoint()放进的地方
         massPoint *pointTrailList = nullptr;    // 绘图用
-        int cSL{};   // calculateStartLoc
-        int sSL{}; // storeStartLoc
+        int cSL{};   // calculateStartLoc用于计算的位置修正
+        int sSL{}; // storeStartLoc用于存放结果的位置修正
 
         int makeScreen () const;
         int calculate ();
