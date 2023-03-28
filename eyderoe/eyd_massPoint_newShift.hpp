@@ -18,24 +18,23 @@ struct massPoint
 
 class physicsSystem
 {
-        struct location { long double x;long double y; };
     private:
         int mode;   // 1为显示轨迹
-        int screenX;    // 屏幕宽度
+        int screenX;
         int *colorList = nullptr;   // 质点颜色
-        int colorNum;   // 预设颜色数量
+        int colorNum;
         long double precision{};    // 计算步长
-        int timer;  // 计时器，作用同下
-        int backGroundColor;    // 背景色
-        int copyNum;    // 轨迹备份数量[解决频闪，但好像不是这个出的问题]
-        std::vector<massPoint> pointList;   // 质点当前所有信息
-        location *pointTrailList = nullptr; // 质点位置信息，用于绘图
+        bool timer;  // 计时器
+        int backGroundColor;
+        std::vector<massPoint> pointList;   // addPoint()放进的地方
+        massPoint *pointTrailList = nullptr;    // 绘图用
+        int cSL{};   // calculateStartLoc
+        int sSL{}; // storeStartLoc
 
         int makeScreen () const;
         int calculate ();
-        int makeCopyList ();    // 初始化轨迹列表
-        int makeCopy (); //每次计算后填写轨迹列表
-        int removePoint ();  //移除最后一个轨迹点，还是解决不了问题，方案不行。现合并了makeSpot()
+        int makeCopyList ();
+        int changePoint ();
         static inline int BGRConverter (int RGB);
         static inline long double calculateR (long double x, long double y);
         static inline long double calculateF (long double r, long double m1, long double m2);
@@ -48,16 +47,12 @@ class physicsSystem
 };
 physicsSystem::physicsSystem (int screenX, int mode = 0)
 {
-    this->mode = mode;  
+    this->mode = mode;
     this->screenX = screenX;
     backGroundColor = 0x9b9c8d;
     precision = 1e-12;
     colorNum = 12;
-    timer = 0;
-    if (mode == 1)
-        copyNum = 1;
-    else
-        copyNum = 3;
+    timer = false;
     // 立春 雨水 谷雨 小暑 立秋 小寒
     colorList = new int[colorNum]{0xfff799, 0xecd452, 0xf9d3e3, 0xdd7694, 0xdcc7e1, 0xa67eb7, \
                                 0xf5b087, 0xef845d, 0x88abda, 0x5976ba, 0xa4c9cc, 0x509296};
@@ -74,6 +69,7 @@ int physicsSystem::addPoint (massPoint point)
 physicsSystem::~physicsSystem ()
 {
     pointList.clear();
+    delete[] pointTrailList;
 }
 int physicsSystem::makeScreen () const
 {
@@ -87,23 +83,27 @@ int physicsSystem::makeScreen () const
     makeScreen();
     makeCopyList();
     while (true) {
+        timer = !timer;
+        cSL = (int) timer * pointList.size();
+        sSL = (int) pointList.size() - cSL;
+        // 这里之前没有任何问题
         calculate();
-        makeCopy();
-        removePoint();
+        changePoint();
     }
 }
-int physicsSystem::calculate () //计算每个点的相互作用
+int physicsSystem::calculate ()
 {
     long double r, f, deltaX, deltaY;
     for (int i = 0 ; i < pointList.size() - 1 ; ++i) {
         for (int j = i + 1 ; j < pointList.size() ; ++j) {
-            //遍历任意两个点
-            r = calculateR(pointList[i].pos.x, pointList[j].pos.y); //计算距离
-            f = calculateF(r, pointList[i].mas, pointList[j].mas);  //计算万有引力
-            deltaX = pointList[j].pos.x - pointList[i].pos.x;   //计算delta x
-            deltaY = pointList[j].pos.y - pointList[i].pos.y;
-            calculateDeltaV(deltaX, deltaY, r, f, pointList[i]);    //计算速度增量 位置增量
-            calculateDeltaV(-deltaX, -deltaY, r, f, pointList[j]);
+            // 以cSL的修正进行计算
+            r = calculateR(pointTrailList[i + cSL].pos.x, pointTrailList[j + cSL].pos.y);
+            f = calculateF(r, pointTrailList[i + cSL].mas, pointTrailList[j + cSL].mas);
+            deltaX = pointTrailList[j + cSL].pos.x - pointTrailList[i + cSL].pos.x;
+            deltaY = pointTrailList[j + cSL].pos.y - pointTrailList[i + cSL].pos.y;
+            // 以sSL的修正存放结果
+            calculateDeltaV(deltaX, deltaY, r, f, pointTrailList[i + sSL]);
+            calculateDeltaV(-deltaX, -deltaY, r, f, pointTrailList[j + sSL]);
         }
     }
     return 0;
@@ -122,13 +122,12 @@ long double physicsSystem::calculateF (long double r, long double m1, long doubl
 }
 int physicsSystem::calculateDeltaV (long double dX, long double dY, long double r, long double f, massPoint &A) const
 {
-    // 一般情况精度不会损失。a在1e-6，deltaV在1e-1
     if (!A.movable)
         return 1;
     long double a;
     // 步长的加速度
     a = f / A.mas;
-    if (a * precision * precision < LDBL_EPSILON)
+    if (a * precision * precision * 1e-1 < LDBL_EPSILON)
         std::cerr << "MasterCaution! PrecisionLost" << std::endl;
     a *= precision;
     // 步长的速度
@@ -141,42 +140,26 @@ int physicsSystem::calculateDeltaV (long double dX, long double dY, long double 
 }
 int physicsSystem::makeCopyList ()
 {
-    pointTrailList = new location[pointList.size() * copyNum];
+    pointTrailList = new massPoint[pointList.size() * 2];
     for (int i = 0 ; i < pointList.size() ; ++i) {  //每个元素
-        for (int j = 0 ; j < copyNum ; ++j) {   //每个元素复制copyNum个
-            pointTrailList[i * copyNum + j] = {pointList[i].pos.x, pointList[i].pos.y};
-        }
+        pointTrailList[i] = pointList[i];
+        pointTrailList[i + pointList.size()] = pointList[i];
     }
     return 0;
 }
-int physicsSystem::makeCopy ()
+int physicsSystem::changePoint ()
 {
-    if (timer == copyNum)
-        timer = 0;
-    for (int i = 0 ; i < pointList.size() ; ++i) {
-        pointTrailList[i * copyNum + timer] = {pointList[i].pos.x, pointList[i].pos.y};
-    }
-    timer += 1;
-    return 0;
-}
-int physicsSystem::removePoint ()
-{
-    int loc, color, locted;
-    loc = timer;    // makeCopy()最后timer+1
-    if (timer == copyNum)
-        loc = 0;
-    locted = timer - 1;
-    //移除最后一个点 新增一个点
+    int color;
     for (int i = 0 ; i < pointList.size() ; ++i) {
         color = BGRConverter(colorList[i]);
         if (mode == 0) {
             setfillcolor(backGroundColor);
             setlinecolor(backGroundColor);
-            fillcircle((int) pointTrailList[i * copyNum + loc].x, (int) pointTrailList[i * copyNum + loc].y, 5);
+            fillcircle((int) pointTrailList[i + cSL].pos.x, (int) pointTrailList[i + cSL].pos.y, 5);
         }
         setfillcolor(color);
         setlinecolor(color);
-        fillcircle((int) pointTrailList[i * copyNum + locted].x, (int) pointTrailList[i * copyNum + locted].y, 5);
+        fillcircle((int) pointTrailList[i + sSL].pos.x, (int) pointTrailList[i + sSL].pos.y, 5);
     }
     return 0;
 }
