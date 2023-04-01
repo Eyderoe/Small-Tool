@@ -36,4 +36,5 @@ a class for calculate complex num and impedance in circuit
 >``setInput (int pin, bool value)`` 输入值\
 >``setInput (int pin, logicGate *frombool, bool isOpposite=false)`` 连接到其他元件的输出\
 # **massPoint**
-质点间万有引力模拟
+质点间万有引力模拟\
+massPoint逻辑精度瞬时 massPoint_newShift不可修复的错误
