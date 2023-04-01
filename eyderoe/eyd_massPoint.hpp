@@ -41,7 +41,7 @@ class physicsSystem
 physicsSystem::physicsSystem (int screenX)
 {
     this->screenX = screenX;
-    precision = 1e-5;
+    precision = 1e-13;
     colorNum = 12;
     // 立春 雨水 谷雨 小暑 立秋 小寒
     colorList = new int[colorNum]{0xfff799, 0xecd452, 0xf9d3e3, 0xdd7694, 0xdcc7e1, 0xa67eb7, \
@@ -81,10 +81,10 @@ int physicsSystem::calculate () //计算每个点的相互作用
     for (int i = 0 ; i < pointList.size() - 1 ; ++i) {
         for (int j = i + 1 ; j < pointList.size() ; ++j) {
             //遍历任意两个点
-            r = calculateR(pointList[i].pos.x, pointList[j].pos.y); //计算距离
-            f = calculateF(r, pointList[i].mas, pointList[j].mas);  //计算万有引力
             deltaX = pointList[j].pos.x - pointList[i].pos.x;   //计算delta x
             deltaY = pointList[j].pos.y - pointList[i].pos.y;
+            r = calculateR(deltaX,deltaY); //计算距离
+            f = calculateF(r, pointList[i].mas, pointList[j].mas);  //计算万有引力
             calculateDeltaV(deltaX, deltaY, r, f, pointList[i]);    //计算速度增量 位置增量
             calculateDeltaV(-deltaX, -deltaY, r, f, pointList[j]);
         }
@@ -125,7 +125,7 @@ int physicsSystem::calculateDeltaV (long double dX, long double dY, long double 
     long double a;
     // 步长的加速度
     a = f / A.mas;
-    if (a * precision * precision < LDBL_EPSILON)
+    if (a * precision * precision *1e-1 < LDBL_EPSILON)
         std::cerr << "MasterCaution! PrecisionLost" << std::endl;
     a *= precision;
     // 步长的速度
