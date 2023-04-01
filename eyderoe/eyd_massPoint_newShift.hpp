@@ -50,7 +50,7 @@ physicsSystem::physicsSystem (int screenX, int mode = 0)
     this->mode = mode;
     this->screenX = screenX;
     backGroundColor = 0x9b9c8d;
-    precision = 1e-12;
+    precision = 1e-13;
     colorNum = 12;
     timer = false;
     // 立春 雨水 谷雨 小暑 立秋 小寒
@@ -86,9 +86,12 @@ int physicsSystem::makeScreen () const
         timer = !timer;
         cSL = (int) timer * pointList.size();
         sSL = (int) pointList.size() - cSL;
+        std::cout << "---------------------------------------------\n";
+        std::cout << "timer csL ssL: " << timer << " " << cSL << " " << sSL << std::endl;
         // 这里之前没有任何问题
         calculate();
         changePoint();
+        std::cout << "\n";
     }
 }
 int physicsSystem::calculate ()
@@ -97,11 +100,13 @@ int physicsSystem::calculate ()
     for (int i = 0 ; i < pointList.size() - 1 ; ++i) {
         for (int j = i + 1 ; j < pointList.size() ; ++j) {
             // 以cSL的修正进行计算
-            r = calculateR(pointTrailList[i + cSL].pos.x, pointTrailList[j + cSL].pos.y);
-            f = calculateF(r, pointTrailList[i + cSL].mas, pointTrailList[j + cSL].mas);
+            std::cout << "calculate between: " << i + cSL << " " << j + cSL << " ";
             deltaX = pointTrailList[j + cSL].pos.x - pointTrailList[i + cSL].pos.x;
             deltaY = pointTrailList[j + cSL].pos.y - pointTrailList[i + cSL].pos.y;
+            r = calculateR(deltaX, deltaY);
+            f = calculateF(r, pointTrailList[i + cSL].mas, pointTrailList[j + cSL].mas);
             // 以sSL的修正存放结果
+            std::cout << "store at: " << i + sSL << " " << j + sSL << std::endl;
             calculateDeltaV(deltaX, deltaY, r, f, pointTrailList[i + sSL]);
             calculateDeltaV(-deltaX, -deltaY, r, f, pointTrailList[j + sSL]);
         }
@@ -141,10 +146,13 @@ int physicsSystem::calculateDeltaV (long double dX, long double dY, long double 
 int physicsSystem::makeCopyList ()
 {
     pointTrailList = new massPoint[pointList.size() * 2];
+    std::cout << "copyList" << std::endl;
     for (int i = 0 ; i < pointList.size() ; ++i) {  //每个元素
         pointTrailList[i] = pointList[i];
         pointTrailList[i + pointList.size()] = pointList[i];
+        std::cout << "i j: " << i << " " << i + pointList.size() << std::endl;
     }
+    std::cout << std::endl;
     return 0;
 }
 int physicsSystem::changePoint ()
@@ -152,6 +160,7 @@ int physicsSystem::changePoint ()
     int color;
     for (int i = 0 ; i < pointList.size() ; ++i) {
         color = BGRConverter(colorList[i]);
+        std::cout << "color overwrite newDraw: " << i << " " << i + cSL << " " << i + sSL << std::endl;
         if (mode == 0) {
             setfillcolor(backGroundColor);
             setlinecolor(backGroundColor);
