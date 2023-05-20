@@ -6,7 +6,7 @@ def isEmpty(iLine):
 
 
 def contentJudge(line):
-    EOFM = "EndedOfFilesMark"
+    EOFM = ""
     if isEmpty(line) == 0:  # 空行
         return [0]
     if "-->" in line:  # 时间轴
