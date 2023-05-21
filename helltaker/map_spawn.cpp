@@ -31,6 +31,7 @@ int *cell = nullptr;
 bool simplify = false; //简易的存储和复杂的存储
 int colorList[] = {BLUE, RED, YELLOW, GREEN, BROWN, CYAN, ROSE, \
                         BLACK, PINK, ORANGE, CHARTREUSE};
+// 发现忘了一个隐藏道具 无所谓啦 4 5
 const char *noteList[] = {"wall", "box", "thorn_H", "thorn_L", "thorn_H with box", \
                         "thorn_L with box", "enemy", "you", "aim", "lock", "key"};
 // 注意：是第y行x列，cell存储是一行一行存储 搞混了就很hmmm
@@ -131,7 +132,7 @@ void moveMap (int moveKey) {
         for (int y = 0 ; y < block ; ++y)
         {
             // 这里必须要有一个延时，不然程序下一秒就会融化。5/21注：好像又莫名其妙的可以跑起来了
-            //std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            // std::this_thread::sleep_for(std::chrono::milliseconds(1));
             fillBlock(x, y);
         }
     // 警告消除
@@ -153,11 +154,19 @@ int switchDetect (int x, int y, int state) {
     }
     if ((x >= 650 && x <= 800) && (y >= 520 && y <= 570))
         return 5;
+    if (x >= 708 && x <= 748 && (y >= 350 && y <= 390))
+    {
+        memset(cell, 0, sizeof(int) * separationNum * separationNum);
+        moveMap(4);
+        return 7;
+    }
+
+
     return 6;
 }
 
 int deepDistribute (int x, int y, int state) {
-    // 左侧：左键1右键2滚轮±3 右侧：方向4结束5空白6
+    // 左侧：左键1右键2滚轮±3 右侧：方向4结束5空白6清零7
     if (x < 603)
     {
         int blockX, blockY;
@@ -187,6 +196,8 @@ void spawnSwitch () {
     setlinestyle(PS_SOLID, 3);
     int left = 758, top = 300;
     const char *letter[] = {"L", "R", "U", "D"};
+    rectangle(708, 350, 748, 390);
+    outtextxy(713, 355, "CL");
     for (int i = 0 ; i < 4 ; ++i)
     {
         rectangle(left, top + i * 50, left + 40, top + i * 50 + 40);
@@ -307,6 +318,7 @@ void mapSpawn (bool read) {
     if (read) moveMap(4);
     mapMaking();
     storeMap();
+    delete[] cell;
 }
 
 }
