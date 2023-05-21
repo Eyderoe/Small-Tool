@@ -14,7 +14,7 @@ b站自动翻译弹幕转换
 摆烂ing
 # helltaker 
 Steam著名推箱子游戏
-> map_spawn 地图编辑器
+> map_spawn 地图编辑器\
 > path_calculate 可达路径计算
 # Eyderoe 
 垃圾大合唱
