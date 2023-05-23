@@ -12,6 +12,9 @@ b站自动翻译弹幕转换
 # navCppAndPy 航路查询
 航线航点间最短路径查询\
 摆烂ing
+# pdf Operation PDF操作
+> 旋转 通常用于扫描pdf文件\
+> 切片 通常用于英文文件切片翻译
 # helltaker 
 Steam著名推箱子游戏
 > map_spawn 地图编辑器\
