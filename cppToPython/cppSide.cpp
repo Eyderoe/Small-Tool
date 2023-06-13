@@ -1,7 +1,7 @@
 #include <fstream>
+#include <iostream>
 #include <iomanip>
 #include <limits>
-#include <iostream>
 
 namespace eyderoe {
 
@@ -14,9 +14,9 @@ long long arrayOutput (kipper *array, long long num, bool cover) {
     std::ofstream outfile;
     outfile << std::setprecision(std::numeric_limits<long double>::digits10);
     if (cover)
-        outfile.open("../cppOutput.txt", std::ios::out);
+        outfile.open("../outputFile.txt", std::ios::out);
     else
-        outfile.open("../cppOutput.txt", std::ios::app);
+        outfile.open("../outputFile.txt", std::ios::app);
     for (int i = 0 ; i < num ; ++i)
         outfile << array[i] << " ";
     outfile << std::endl;
@@ -30,9 +30,9 @@ long long arrayOutput (floppy &array, long long num, bool cover) {
     std::ofstream outfile;
     outfile << std::setprecision(std::numeric_limits<long double>::digits10);
     if (cover)
-        outfile.open("../cppOutput.txt", std::ios::out);
+        outfile.open("./outputFile.txt", std::ios::out);
     else
-        outfile.open("../cppOutput.txt", std::ios::app);
+        outfile.open("./outputFile.txt", std::ios::app);
     for (int i = 0 ; i < num ; ++i)
         outfile << array[i] << " ";
     outfile << std::endl;
@@ -60,7 +60,7 @@ template<typename chip>
 chip linking_list<chip>::operator[] (long long index) {
     if (index < 0)
     {
-        std::cerr << "index out of range." << std::endl;
+        std::cerr << "index out of range.";
         return 0;
     }
     node *a = head;
@@ -69,7 +69,7 @@ chip linking_list<chip>::operator[] (long long index) {
             a = a->next;
         else
         {
-            std::cerr << "index out of range." << std::endl;
+            std::cerr << "index out of range.";
             return 0;
         }
     return a->data;
