@@ -4,23 +4,38 @@
 #include <iostream>
 #include <graphics.h>
 #include <cmath>
+#include <vector>
+#include <cstdarg>
+#include <cfloat>
 
 namespace eyderoe {
 
+
+//重新分配内存，但数组。用STL应该会更好？
 template<typename alfa>
-alfa *renew (alfa *list_old, int num_old, int num_new = -1) //重新分配内存，但数组
+alfa *renew (alfa *list_old, int num_old, int num_new = -1);
+//截取小数
+long double cutDecimal (long double input, int n);
+//科学计数法
+long double transMult (long double numy, char mult);
+//截取字符串
+std::string cutString (std::string str, int cutLength);
+//转换为科学计数法表示的字符串
+std::string transMultStr (long double a);
+
+template<typename alfa>
+alfa *renew (alfa *list_old, int num_old, int num_new)
 {
     if (num_new == -1)
         num_new = num_old + 1;
     if (num_old <= 0 || num_new <= 0 || num_new < num_old) {
-        std::cout << "error in length" << std::endl;
-        return NULL;
+        std::cerr << "error in length" << std::endl;
+        return nullptr;
     }
     int i;
     alfa *list_new = new alfa[num_new]();
-    for (i = 0 ; i < num_old ; ++i) {
-        list_new[i] = list_old[i];
-    }
+    for (i = 0 ; i < num_old ; ++i) 
+        list_new[i] = std::move(list_old[i]);
     delete[] list_old;
     return list_new;
 }
@@ -38,7 +53,7 @@ long double cutDecimal (long double input, int n)
     }
     output = std::stold(a);
     return output;
-}       //截取小数
+}
 
 long double transMult (long double numy, char mult)
 {
@@ -50,9 +65,9 @@ long double transMult (long double numy, char mult)
     else if ('u' == mult) numy *= 1e-6;
     else if ('n' == mult) numy *= 1e-9;
     else if ('p' == mult) numy *= 1e-12;
-    else std::cout << "unrecognized unit: " << mult << std::endl;
+    else std::cerr << "unrecognized unit: " << mult << std::endl;
     return numy;
-}   //科学计数法
+}
 
 std::string cutString (std::string str, int cutLength)
 {
@@ -62,7 +77,7 @@ std::string cutString (std::string str, int cutLength)
     for (int i = 0 ; i < length ; ++i)
         alfa += str[i];
     return alfa;
-}   //截取字符串
+}
 
 std::string transMultStr (long double a)
 {
@@ -94,6 +109,6 @@ std::string transMultStr (long double a)
     if (isPlus == 0)
         strReturn = '-' + strReturn;
     return strReturn;
-}   //转换为科学计数法表示的字符串
+}
 
 }
