@@ -19,7 +19,8 @@ b站自动翻译弹幕转换
 Steam著名推箱子游戏
 > map_spawn 地图编辑器\
 > path_calculate 可达路径计算
-# cppToPython 
-cpp数组存入文件并用python读取
+# dataSharing
+cpp数组 -- txt文件 -- python列表\
+双向转换
 # Eyderoe 
 垃圾大合唱
