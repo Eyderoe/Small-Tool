@@ -5,136 +5,124 @@
 
 namespace eyderoe {
 
-constexpr long double GravityConstant = 6.674255e+20; //6.674255e-11
+constexpr long double gravity = 6.67e+7;//e-11
 
-struct massPoint
-{
-    struct threeDimension { long double x;long double y; };
-    threeDimension pos;
-    threeDimension vol;
-    long double mas;
-    bool movable;
-};
-
-class physicsSystem
-{
+class massPoint {
+        struct vectors {
+            long double x;
+            long double y;
+            inline vectors operator* (long double a) const {
+                return {x * a, y * a};
+            }
+            inline vectors operator/ (long double a) const {
+                return {x / a, y / a};
+            }
+            inline void operator+= (vectors a) {
+                x += a.x;
+                y += a.y;
+            }
+        };
     private:
-        int screenX;
-        int *colorList = nullptr;
-        int colorNum;
-        long double precision{};
-        std::vector<massPoint> pointList;
-
-        int makeScreen () const;
-        int calculate ();
-        int makeSpot ();
-        static inline int RGBConverter (int RGB);
-        static inline long double calculateR (long double x, long double y);
-        static inline long double calculateF (long double r, long double m1, long double m2);
-        inline int calculateDeltaV (long double dX, long double dY, long double r, long double f, massPoint &A) const;
+        vectors position{};
+        vectors positionTemp{};
+        vectors velocity{};
+        vectors acceleration{};
+        long double mass{};
     public:
-        explicit physicsSystem (int screenX);
-        ~physicsSystem ();
-        int addPoint (massPoint point);
-        [[noreturn]] void show ();
+        massPoint (vectors p, vectors v, long double m);
+        void between (const massPoint &another, long double step);
+        inline void update ();
+        inline int getX () const;
+        inline int getY () const;
 };
-physicsSystem::physicsSystem (int screenX)
-{
-    this->screenX = screenX;
-    precision = 1e-13;
-    colorNum = 12;
-    // 立春 雨水 谷雨 小暑 立秋 小寒
-    colorList = new int[colorNum]{0xfff799, 0xecd452, 0xf9d3e3, 0xdd7694, 0xdcc7e1, 0xa67eb7, \
+massPoint::massPoint (vectors p, vectors v, long double m) {
+    position = positionTemp = p;
+    velocity = v;
+    mass = m;
+}
+void massPoint::between (const massPoint &another, long double step) {
+    // 距离
+    vectors distance{};
+    long double distances;
+    distance.x = another.position.x - position.x;
+    distance.y = another.position.y - position.x;
+    distances = distance.x * distance.x + distance.y * distance.y;
+    // 力
+    vectors force{};
+    long double forces;
+    forces = gravity * mass * another.mass / distances;
+    force.x = forces * ((another.position.x - position.x) / distances);
+    force.y = forces * ((another.position.y - position.y) / distances);
+    // 加速度
+    acceleration = force / mass;
+    // 速度
+    velocity += acceleration * step;
+    // 位置
+    positionTemp += velocity * step;
+}
+void massPoint::update () {
+    position = positionTemp;
+}
+int massPoint::getY () const {
+    return int(position.x);
+}
+int massPoint::getX () const {
+    return int(position.y);
+}
+
+class physicalSystem {
+    private:
+        std::vector<massPoint> pointList{};
+        long double step;
+        int *colorList{};
+    public:
+        void add (massPoint copy);
+        [[noreturn]] void show ();
+        physicalSystem ();
+        void calculation ();
+        void draw ();
+        static inline int RGBtoBGR (int color);
+};
+void physicalSystem::add (massPoint copy) {
+    pointList.push_back(copy);
+}
+[[noreturn]] void physicalSystem::show () {
+    initgraph(800, 600);
+    setbkcolor(BLACK);
+    cleardevice();
+    while (true) {
+        calculation();
+        draw();
+    }
+}
+physicalSystem::physicalSystem () {
+    step = 1e-6;
+    // 立春 雨水 谷雨 小暑 立秋 小寒 in rgb
+    colorList = new int[12]{0xfff799, 0xecd452, 0xf9d3e3, 0xdd7694, 0xdcc7e1, 0xa67eb7, \
                                 0xf5b087, 0xef845d, 0x88abda, 0x5976ba, 0xa4c9cc, 0x509296};
 }
-int physicsSystem::addPoint (massPoint point)
-{
-    point.vol.x *= 1e+8;
-    point.vol.y *= 1e+8;
-    pointList.push_back(point);
-    if (point.mas <= 0)
-        std::cerr << "error in mass: " << point.mas << std::endl;
-    return 0;
+void physicalSystem::calculation () {
+    for (int i = 0 ; i < pointList.size() ; ++i)
+        for (int j = 0 ; j < pointList.size() ; ++j)
+            if (i != j)
+                pointList[i].between(pointList[j], step);
 }
-physicsSystem::~physicsSystem ()
-{
-    pointList.clear();
-}
-int physicsSystem::makeScreen () const
-{
-    initgraph(screenX, (int) (0.75 * screenX));
-    setbkcolor(0x9b9c8d);
-    cleardevice();
-    return 0;
-}
-[[noreturn]] void physicsSystem::show ()
-{
-    makeScreen();
-    while (true) {
-        calculate();
-        makeSpot();
+void physicalSystem::draw () {
+//    cleardevice();
+    int i = 0;
+    for (auto &j : pointList)
+        j.update();
+    for (auto &j : pointList) {
+        int colorNow;
+        colorNow = RGBtoBGR(colorList[i]);
+        setfillcolor(colorNow);
+        setlinecolor(colorNow);
+        fillcircle(j.getX(), j.getY(), 3);
+        i += 1;
     }
 }
-int physicsSystem::calculate () //计算每个点的相互作用
-{
-    long double r, f, deltaX, deltaY;
-    for (int i = 0 ; i < pointList.size() - 1 ; ++i) {
-        for (int j = i + 1 ; j < pointList.size() ; ++j) {
-            //遍历任意两个点
-            deltaX = pointList[j].pos.x - pointList[i].pos.x;   //计算delta x
-            deltaY = pointList[j].pos.y - pointList[i].pos.y;
-            r = calculateR(deltaX,deltaY); //计算距离
-            f = calculateF(r, pointList[i].mas, pointList[j].mas);  //计算万有引力
-            calculateDeltaV(deltaX, deltaY, r, f, pointList[i]);    //计算速度增量 位置增量
-            calculateDeltaV(-deltaX, -deltaY, r, f, pointList[j]);
-        }
-    }
-    return 0;
-}
-int physicsSystem::makeSpot ()
-{
-    int color;
-    for (int i = 0 ; i < pointList.size() ; ++i) {
-        if (i < colorNum)
-            color = RGBConverter(colorList[i]);
-        else
-            std::cerr << "color empty error!" << std::endl;
-        setfillcolor(color);
-        setlinecolor(color);
-        fillcircle((int) pointList[i].pos.x, (int) pointList[i].pos.y, 5);
-    }
-    return 0;
-}
-int physicsSystem::RGBConverter (int RGB)   //RGB -> BGR
-{
-    return ((RGB >> 16)&0x0000ff)|(RGB&0x00ff00)|((RGB << 16)&0xff0000);
-}
-long double physicsSystem::calculateR (long double x, long double y)
-{
-    return sqrtl(x * x + y * y);
-}
-long double physicsSystem::calculateF (long double r, long double m1, long double m2)
-{
-    return GravityConstant * m1 * m2 / (r * r);
-}
-int physicsSystem::calculateDeltaV (long double dX, long double dY, long double r, long double f, massPoint &A) const
-{
-    // 一般情况精度不会损失。a在1e-6，deltaV在1e-1
-    if (!A.movable)
-        return 1;
-    long double a;
-    // 步长的加速度
-    a = f / A.mas;
-    if (a * precision * precision *1e-1 < LDBL_EPSILON)
-        std::cerr << "MasterCaution! PrecisionLost" << std::endl;
-    a *= precision;
-    // 步长的速度
-    A.vol.x += a * (dX / r);
-    A.vol.y += a * (dY / r);
-    // 步长位移的修正
-    A.pos.x += A.vol.x * precision;
-    A.pos.y += A.vol.y * precision;
-    return 0;
+int physicalSystem::RGBtoBGR (int color) {
+    return ((color >> 16)&0x0000ff)|(color&0x00ff00)|((color << 16)&0xff0000);
 }
 
 }
