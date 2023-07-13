@@ -35,9 +35,8 @@ class massPoint {
         inline int getX () const;
         inline int getY () const;
 };
-massPoint::massPoint (vectors p, vectors v, long double m) {
-    position = positionTemp = p;
-    velocity = v;
+massPoint::massPoint (vectors p, vectors v, long double m)
+    : position(p), positionTemp(p), velocity(v) {
     mass = m * 1e+12;
 }
 void massPoint::between (const massPoint &another, long double step) {
@@ -45,7 +44,7 @@ void massPoint::between (const massPoint &another, long double step) {
     vectors distance{};
     long double distances;
     distance.x = another.position.x - position.x;
-    distance.y = another.position.y - position.x;
+    distance.y = another.position.y - position.y;
     distances = distance.x * distance.x + distance.y * distance.y;
     // 力
     vectors force{};
@@ -82,9 +81,7 @@ class physicalSystem {
         explicit physicalSystem (bool trail);
         void calculation ();
         void draw ();
-        void illegal ();
         static inline int RGBtoBGR (int color);
-        static bool checkSame (std::vector<long double> &a);
 };
 void physicalSystem::add (massPoint copy) {
     pointList.push_back(copy);
@@ -93,7 +90,6 @@ void physicalSystem::add (massPoint copy) {
     initgraph(800, 600);
     setbkcolor(0x696969);
     cleardevice();
-    illegal();
     while (true) {
         calculation();
         draw();
@@ -127,29 +123,6 @@ void physicalSystem::draw () {
 }
 int physicalSystem::RGBtoBGR (int color) {
     return ((color >> 16)&0x0000ff)|(color&0x00ff00)|((color << 16)&0xff0000);
-}
-void physicalSystem::illegal () {
-    std::vector<long double> x, y;
-    bool xx, yy;
-    for (auto &i : pointList) {
-        x.push_back(i.getX());
-        y.push_back(i.getY());
-    }
-    xx = checkSame(x);
-    yy = checkSame(y);
-    if (xx || yy) {
-        //std::cerr << "**********\n" << "* MASTER *\n" << "*  CAUT  *\n" << "**********" << std::endl;
-        std::cerr << "SAME VALUE" << std::endl;
-        if (xx)
-            std::cerr << "-POSITION X......CHANGE" << std::endl;
-        if (yy)
-            std::cerr << "-POSITION Y......CHANGE" << std::endl;
-    }
-}
-bool physicalSystem::checkSame (std::vector<long double> &a) {
-    std::sort(a.begin(), a.end());
-    auto it = std::adjacent_find(a.begin(), a.end());
-    return it != a.end();
 }
 
 }
