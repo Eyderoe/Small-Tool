@@ -92,7 +92,7 @@ void map::setAim (int start, int end) {
     if (start >= lengths || end >= lengths)
         std::cerr << "MasterCaution:OutOfRange" << std::endl;
     if (start == end)
-        std::cout << "ECAM\n" << "-START...CHECK\n" << "-END.....CHECK" << std::endl;
+        std::cout << "ECAM\n" << "-START...CHECK\n" << "-END.....CHECK\n" << "--------------" << std::endl;
     (headList + start)->distance = 0;
     (headList + start)->frontPoint = -1;
     endPoint = end;
@@ -125,9 +125,10 @@ void map::printPath () {
     if (find) {
         path.push_back(int(p - headList));
         int timer = 0;
+        std::cout << "distance:" << (headList + endPoint)->distance << std::endl;
         for (auto it = path.rbegin() ; it != path.rend() ; ++it) {
             timer++;
-            std::cout << *it << "-";
+            std::cout << *it << ((timer != path.size()) ? '-' : ' ');
             if (timer % 7 == 0)
                 std::cout << "\n";
         }
