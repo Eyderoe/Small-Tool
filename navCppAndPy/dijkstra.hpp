@@ -22,18 +22,20 @@ class map {
         };
     private:
         int lengths;
+        bool directed;
         head *headList;
         int endPoint{};
+        inline void trueAdd (int from, int to, double value);
     public:
-        explicit map (int length);
+        map (int length, bool isDirected);
         ~map ();
         void add (int from, int to, double value);
         void setAim (int start, int end);
         void calculation ();
         void printPath ();
 };
-map::map (int length)
-    : lengths(length) {
+map::map (int length, bool isDirected)
+    : lengths(length), directed(isDirected) {
     headList = new head[lengths];
 }
 void map::calculation () { // 应该不是最优，后面还可以再改改。
@@ -80,19 +82,19 @@ void map::calculation () { // 应该不是最优，后面还可以再改改。
     }
 }
 void map::add (int from, int to, double value) {
-    node *added = new node, *temp;
-    added->id = to;
-    added->value = value;
-    temp = headList[from].next;
-    headList[from].next = added;
-    added->next = temp;
+    if (directed)
+        trueAdd(from, to, value);
+    else {
+        trueAdd(from, to, value);
+        trueAdd(to, from, value);
+    }
 }
 void map::setAim (int start, int end) {
     // lengths算的元素个数，id序号是从0开始的。
     if (start >= lengths || end >= lengths)
         std::cerr << "MasterCaution:OutOfRange" << std::endl;
     if (start == end)
-        std::cout << "ECAM\n" << "-START...CHECK\n" << "-END.....CHECK\n" << "--------------" << std::endl;
+        std::cout << "DESTINATION CONFLICT\n" << "-START...CHECK\n" << "-END.....CHECK\n" << "--------------\n";
     (headList + start)->distance = 0;
     (headList + start)->frontPoint = -1;
     endPoint = end;
@@ -133,6 +135,16 @@ void map::printPath () {
                 std::cout << "\n";
         }
     }
+}
+void map::trueAdd (int from, int to, double value) {
+    node *added = new node, *temp;
+    added->id = to;
+    added->value = value;
+    temp = headList[from].next;
+    headList[from].next = added;
+    added->next = temp;
+    if (value <= 0)
+        std::cout << "DISTANCE FAIL\n" << "-VALUE...CHECK\n" << "--------------" << std::endl;
 }
 
 }
