@@ -23,5 +23,7 @@ Steam著名推箱子游戏
 # dataSharing
 cpp数组 -- txt文件 -- python列表\
 双向转换
+# utf8Converter
+解决CLion输出乱码问题
 # Eyderoe 
 垃圾大合唱
