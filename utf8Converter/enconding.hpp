@@ -49,7 +49,7 @@ std::string utf8Converter::toGBK (const std::string &utf8) {
         short uniNum{}, gbkNum{};
         uniNum = short(int(uniNum)|((uniStr[i] << 8)&0xff00));
         uniNum = short(int(uniNum)|((uniStr[i + 1])&0x00ff));
-        for (int j = 0 ; j < length ; ++j) {  // unicode -> gbk
+        for (int j = 0 ; j < length ; ++j) {  // unicode -> gbk 数据有点多，其实可以改成二分法查询
             if (unicode[j] == uniNum)
                 gbkNum = gbk[j];
         }
