@@ -32,7 +32,7 @@ class utf8Converter {
     public:
         std::string toUnicode (std::string utf8);
         std::string toGBK (const std::string &utf8);
-        short toCodeUnicode (short gbCode, bool isPrint);
+        short toCodeUnicode (short gbkCode, bool isPrint);
         short toCodeGBK (short uniCode, bool isPrint);
         utf8Converter ();
         ~utf8Converter ();
@@ -43,21 +43,21 @@ void utf8Converter::masterCaution (const std::string &message, int code = 0) {
 }
 std::string utf8Converter::toGBK (const std::string &utf8) {
     std::string uniStr = toUnicode(utf8);
-    std::string gbStr;
+    std::string gbkStr;
     deleteRecord(uniStr);
     for (int i = 0 ; i < uniStr.size() ; i += 2) {
-        short uniNum{}, gbNum{};
+        short uniNum{}, gbkNum{};
         uniNum = short(int(uniNum)|((uniStr[i] << 8)&0xff00));
         uniNum = short(int(uniNum)|((uniStr[i + 1])&0x00ff));
         for (int j = 0 ; j < length ; ++j) {  // unicode -> gbk
             if (unicode[j] == uniNum)
-                gbNum = gbk[j];
+                gbkNum = gbk[j];
         }
-        gbStr.push_back(char((int(gbNum >> 8))&0x00ff));
-        gbStr.push_back(char(int(gbNum)&0x00ff));
+        gbkStr.push_back(char((int(gbkNum >> 8))&0x00ff));
+        gbkStr.push_back(char(int(gbkNum)&0x00ff));
     }
-    resumeRecord(gbStr);
-    return gbStr;
+    resumeRecord(gbkStr);
+    return gbkStr;
 }
 std::string utf8Converter::toUnicode (std::string utf8) {
     std::string uni;
@@ -123,9 +123,9 @@ short utf8Converter::str2short (const char *num) {
     }
     return sum;
 }
-short utf8Converter::toCodeUnicode (short gbCode, bool isPrint = false) {
+short utf8Converter::toCodeUnicode (short gbkCode, bool isPrint = false) {
     for (int i = 0 ; i < length ; ++i) {
-        if (gbk[i] == gbCode) {
+        if (gbk[i] == gbkCode) {
             if (isPrint)
                 std::cout << short2str(unicode[i]).get() << std::endl;
             return unicode[i];
