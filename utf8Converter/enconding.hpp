@@ -6,7 +6,7 @@
 #include <vector>
 #include <cmath>
 
-// 乱码原因是string存储格式为gb2312或者gbk？(2字节)，而这里输入的是utf-8(3字节)
+// 乱码原因是string存储格式为gbk(2字节)，而这里输入的是utf-8(3字节)
 // 才发现csdn上有编码对应表 没有意义的答辩程序
 
 namespace eyderoe {
@@ -22,7 +22,7 @@ class utf8Converter {
         };
     private:
         short *unicode{};
-        short *gb2312{};
+        short *gbk{};
         int length{};
         std::vector<record> recordList;
         void readMapping ();
@@ -31,9 +31,9 @@ class utf8Converter {
         void deleteRecord (std::string &a); // 根据表 删除ASCII gb是通过先调用uni函数实现的
     public:
         std::string toUnicode (std::string utf8);
-        std::string toGB2312 (const std::string &utf8);
+        std::string toGBK (const std::string &utf8);
         short toCodeUnicode (short gbCode, bool isPrint);
-        short toCodeGB2312 (short uniCode, bool isPrint);
+        short toCodeGBK (short uniCode, bool isPrint);
         utf8Converter ();
         ~utf8Converter ();
 };
@@ -41,7 +41,7 @@ void utf8Converter::masterCaution (const std::string &message, int code = 0) {
     std::cerr << "MASTER CAUTION !!!" << std::endl << message;
     exit(code);
 }
-std::string utf8Converter::toGB2312 (const std::string &utf8) {
+std::string utf8Converter::toGBK (const std::string &utf8) {
     std::string uniStr = toUnicode(utf8);
     std::string gbStr;
     deleteRecord(uniStr);
@@ -49,9 +49,9 @@ std::string utf8Converter::toGB2312 (const std::string &utf8) {
         short uniNum{}, gbNum{};
         uniNum = short(int(uniNum)|((uniStr[i] << 8)&0xff00));
         uniNum = short(int(uniNum)|((uniStr[i + 1])&0x00ff));
-        for (int j = 0 ; j < length ; ++j) {  // unicode -> gb2312
+        for (int j = 0 ; j < length ; ++j) {  // unicode -> gbk
             if (unicode[j] == uniNum)
-                gbNum = gb2312[j];
+                gbNum = gbk[j];
         }
         gbStr.push_back(char((int(gbNum >> 8))&0x00ff));
         gbStr.push_back(char(int(gbNum)&0x00ff));
@@ -87,7 +87,7 @@ void utf8Converter::readMapping () {
     char *temp = new char[5];
     int timer = 0;
     std::vector<short> unicodeVec;
-    std::vector<short> gb2312Vec;
+    std::vector<short> gbkVec;
     while (true) {
         int back;
         back = fscanf_s(mappingTable, "%s", temp, 5);
@@ -96,15 +96,15 @@ void utf8Converter::readMapping () {
         if (timer % 2 == 0)
             unicodeVec.push_back(str2short(temp));
         else
-            gb2312Vec.push_back(str2short(temp));
+            gbkVec.push_back(str2short(temp));
         timer += 1;
     }
     length = int(unicodeVec.size());
     unicode = new short[length];
-    gb2312 = new short[length];
+    gbk = new short[length];
     std::copy(unicodeVec.begin(), unicodeVec.end(), unicode);
-    std::copy(gb2312Vec.begin(), gb2312Vec.end(), gb2312);
-    if (unicodeVec.size() != gb2312Vec.size())
+    std::copy(gbkVec.begin(), gbkVec.end(), gbk);
+    if (unicodeVec.size() != gbkVec.size())
         masterCaution("length disagree !");
     delete[] temp;
     fclose(mappingTable);
@@ -125,7 +125,7 @@ short utf8Converter::str2short (const char *num) {
 }
 short utf8Converter::toCodeUnicode (short gbCode, bool isPrint = false) {
     for (int i = 0 ; i < length ; ++i) {
-        if (gb2312[i] == gbCode) {
+        if (gbk[i] == gbCode) {
             if (isPrint)
                 std::cout << short2str(unicode[i]).get() << std::endl;
             return unicode[i];
@@ -134,20 +134,20 @@ short utf8Converter::toCodeUnicode (short gbCode, bool isPrint = false) {
     masterCaution("no unicode found !");
     return 0;
 }
-short utf8Converter::toCodeGB2312 (short uniCode, bool isPrint = false) {
+short utf8Converter::toCodeGBK (short uniCode, bool isPrint = false) {
     for (int i = 0 ; i < length ; ++i) {
         if (unicode[i] == uniCode) {
             if (isPrint)
-                std::cout << short2str(gb2312[i]).get() << std::endl;
-            return gb2312[i];
+                std::cout << short2str(gbk[i]).get() << std::endl;
+            return gbk[i];
         }
     }
-    masterCaution("no gb2312 found !");
+    masterCaution("no gbk found !");
     return 0;
 }
 utf8Converter::~utf8Converter () {
     delete[] unicode;
-    delete[] gb2312;
+    delete[] gbk;
 }
 std::unique_ptr<char[]> utf8Converter::short2str (short num) {
     // 因为这一坨扔回去就输出下 没啦，让gpt改的智能指针。可能泄露，可能不会。
@@ -163,7 +163,6 @@ std::unique_ptr<char[]> utf8Converter::short2str (short num) {
     return b;
 }
 void utf8Converter::establishRecord (std::string &a) {
-    // 这三个Record还有点问题 hmm...
     recordList.clear();
     std::vector<int> location;
     int non = 0;
