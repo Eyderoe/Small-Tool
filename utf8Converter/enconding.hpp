@@ -118,7 +118,8 @@ short utf8Converter::str2short (const char *num) {
             iChar = short(num[i] - '0');
         else//字母
             iChar = short(num[i] - 'A' + 10);
-        sum += pow16(short(3 - i)) * iChar; // 艹 这里不想管了
+        auto temp = pow16(short(3 - i)) * iChar;
+        sum = short(short(sum) + short(temp)); // 为什么这样写? 因为不这样Clang-Tidy会报黄，pow16也改写了一遍 艹
     }
     return sum;
 }
