@@ -6,22 +6,31 @@
 #include <vector>
 #include <cmath>
 
-//乱码原因是string存储格式为gb2312或者gbk？(2字节)，而这里输入的是utf-8(3字节)
-//缺点是不能判断哪些是utf-8(输入的string必须全是中文)
+// 乱码原因是string存储格式为gb2312或者gbk？(2字节)，而这里输入的是utf-8(3字节)
+// 才发现csdn上有编码对应表 没有意义的答辩程序
 
 namespace eyderoe {
 
 class utf8Converter {
         static inline void masterCaution (const std::string &message, int code);
+        static inline short pow16 (short y);
         static short str2short (const char *num); // 001F -> 31
         static std::unique_ptr<char[]> short2str (short num); // 31 -> 001F
+        struct record { // 通过统计非中文字符数量，可以得到新的插入位置。
+            char ascii{};
+            int loc{};
+        };
     private:
         short *unicode{};
         short *gb2312{};
         int length{};
+        std::vector<record> recordList;
         void readMapping ();
+        void establishRecord (std::string &a); // 删除ASCII 建表
+        void resumeRecord (std::string &a); // 根据表 恢复ASCII
+        void deleteRecord (std::string &a); // 根据表 删除ASCII gb是通过先调用uni函数实现的
     public:
-        static std::string toUnicode (std::string utf8);
+        std::string toUnicode (std::string utf8);
         std::string toGB2312 (const std::string &utf8);
         short toCodeUnicode (short gbCode, bool isPrint);
         short toCodeGB2312 (short uniCode, bool isPrint);
@@ -35,6 +44,7 @@ void utf8Converter::masterCaution (const std::string &message, int code = 0) {
 std::string utf8Converter::toGB2312 (const std::string &utf8) {
     std::string uniStr = toUnicode(utf8);
     std::string gbStr;
+    deleteRecord(uniStr);
     for (int i = 0 ; i < uniStr.size() ; i += 2) {
         short uniNum{}, gbNum{};
         uniNum = short(int(uniNum)|((uniStr[i] << 8)&0xff00));
@@ -46,10 +56,12 @@ std::string utf8Converter::toGB2312 (const std::string &utf8) {
         gbStr.push_back(char((int(gbNum >> 8))&0x00ff));
         gbStr.push_back(char(int(gbNum)&0x00ff));
     }
+    resumeRecord(gbStr);
     return gbStr;
 }
 std::string utf8Converter::toUnicode (std::string utf8) {
     std::string uni;
+    establishRecord(utf8);
     for (int i = 0 ; i < utf8.size() ; i += 3) {
         char first = utf8[i], second = utf8[i + 1], third = utf8[i + 2];
         char temp1 = {}, temp2 = {}; // 这里其实可以写个内联函数的 算了
@@ -61,13 +73,14 @@ std::string utf8Converter::toUnicode (std::string utf8) {
         uni.push_back(temp1);
         uni.push_back(temp2);
     }
+    resumeRecord(uni);
     return uni;
 }
 utf8Converter::utf8Converter () {
     readMapping();
 }
 void utf8Converter::readMapping () {
-    const char *path = R"(D:\Clion\unicode2gb2312.txt)";
+    const char *path = R"(D:\Clion\unicode2gbk.txt)";
     std::FILE *mappingTable = fopen(path, "r");
     if (!mappingTable)
         masterCaution("file error !");
@@ -77,7 +90,7 @@ void utf8Converter::readMapping () {
     std::vector<short> gb2312Vec;
     while (true) {
         int back;
-        back = fscanf(mappingTable, "%s", temp);
+        back = fscanf_s(mappingTable, "%s", temp, 5);
         if (back == EOF)
             break;
         if (timer % 2 == 0)
@@ -105,7 +118,7 @@ short utf8Converter::str2short (const char *num) {
             iChar = short(num[i] - '0');
         else//字母
             iChar = short(num[i] - 'A' + 10);
-        sum += pow(16, 3 - i) * iChar;
+        sum += pow16(short(3 - i)) * iChar; // 艹 这里不想管了
     }
     return sum;
 }
@@ -142,11 +155,42 @@ std::unique_ptr<char[]> utf8Converter::short2str (short num) {
     for (int i = 3 ; i >= 0 ; --i) {
         char temp = char(0x000f&(num >> (4 * (3 - i))));
         if (temp <= 9)
-            b[i] = temp + '0';
+            b[i] = char(int(temp) + int('0'));
         else
-            b[i] = temp + 'A' - 10;
+            b[i] = char(int(temp) + int('A') - 10);
     }
     return b;
+}
+void utf8Converter::establishRecord (std::string &a) {
+    // 这三个Record还有点问题 hmm...
+    recordList.clear();
+    std::vector<int> location;
+    int non = 0;
+    for (int i = 0 ; i < a.size() ; ++i) {
+        if (a[i] >= ' ' && a[i] <= '~') { // 如果出现了ASCII那几个字符。这个if判断条件可能是正确的
+            non += 1;
+            recordList.push_back({a[i], i - ((i + 1) - non) / 3});
+            location.push_back(i);
+        }
+    }
+    for (int i = int(location.size()) - 1 ; i >= 0 ; --i)
+        a.erase(a.begin() + location[i]);
+}
+void utf8Converter::resumeRecord (std::string &a) {
+    for (auto &i : recordList)
+        a.insert(i.loc, std::string(1, i.ascii));
+}
+void utf8Converter::deleteRecord (std::string &a) {
+    for (int i = int(recordList.size()) - 1 ; i >= 0 ; --i)
+        a.erase(a.begin() + recordList[i].loc);
+}
+short utf8Converter::pow16 (short y) {
+    if (y == 0)
+        return 1;
+    short base{16};
+    for (short i = 0 ; i < (y - 1) ; ++i)
+        base *= 16;
+    return base;
 }
 
 }
