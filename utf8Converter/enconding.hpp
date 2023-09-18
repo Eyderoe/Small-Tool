@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 // 乱码原因是string存储格式为gbk(2字节)，而这里输入的是utf-8(3字节)
 // 才发现csdn上有编码对应表 没有意义的答辩程序
@@ -25,6 +26,8 @@ class utf8Converter {
         short *gbk{};
         int length{};
         std::vector<record> recordList;
+
+        void sortList ();
         void readMapping ();
         void establishRecord (std::string &a); // 删除ASCII 建表
         void resumeRecord (std::string &a); // 根据表 恢复ASCII
@@ -42,6 +45,7 @@ void utf8Converter::masterCaution (const std::string &message, int code = 0) {
     exit(code);
 }
 std::string utf8Converter::toGBK (const std::string &utf8) {
+    // unicode 转 gbk 采用映射表查找
     std::string uniStr = toUnicode(utf8);
     std::string gbkStr;
     deleteRecord(uniStr);
@@ -49,10 +53,10 @@ std::string utf8Converter::toGBK (const std::string &utf8) {
         short uniNum{}, gbkNum{};
         uniNum = short(int(uniNum)|((uniStr[i] << 8)&0xff00));
         uniNum = short(int(uniNum)|((uniStr[i + 1])&0x00ff));
-        for (int j = 0 ; j < length ; ++j) {  // unicode -> gbk 数据有点多，其实可以改成二分法查询
-            if (unicode[j] == uniNum)
-                gbkNum = gbk[j];
-        }
+        // 二分查找
+        auto lower = std::lower_bound(unicode, unicode + length, uniNum);
+        if (lower != unicode + length && *lower == uniNum)
+            gbkNum=gbk[lower-unicode];
         gbkStr.push_back(char((int(gbkNum >> 8))&0x00ff));
         gbkStr.push_back(char(int(gbkNum)&0x00ff));
     }
@@ -60,6 +64,7 @@ std::string utf8Converter::toGBK (const std::string &utf8) {
     return gbkStr;
 }
 std::string utf8Converter::toUnicode (std::string utf8) {
+    // utf-8 转 unicode 采用直接位操作
     std::string uni;
     establishRecord(utf8);
     for (int i = 0 ; i < utf8.size() ; i += 3) {
@@ -78,9 +83,10 @@ std::string utf8Converter::toUnicode (std::string utf8) {
 }
 utf8Converter::utf8Converter () {
     readMapping();
+    sortList();
 }
 void utf8Converter::readMapping () {
-    const char *path = R"(D:\Clion\unicode2gbk.txt)";
+    const char *path = R"(D:\Clion\unicode2gbk expand.txt)";
     std::FILE *mappingTable = fopen(path, "r");
     if (!mappingTable)
         masterCaution("file error !");
@@ -167,7 +173,7 @@ void utf8Converter::establishRecord (std::string &a) {
     std::vector<int> location;
     int non = 0;
     for (int i = 0 ; i < a.size() ; ++i) {
-        if (a[i] >= ' ' && a[i] <= '~') { // 如果出现了ASCII那几个字符。这个if判断条件可能是正确的
+        if (a[i] >= 0x00 && a[i] <= 0x7f) { // 如果出现了ASCII那几个字符。这个if判断条件可能是正确的
             non += 1;
             recordList.push_back({a[i], i - ((i + 1) - non) / 3});
             location.push_back(i);
@@ -191,6 +197,33 @@ short utf8Converter::pow16 (short y) {
     for (short i = 0 ; i < (y - 1) ; ++i)
         base *= 16;
     return base;
+}
+void utf8Converter::sortList () {
+    bool check = true;
+    // 从小到大排序     突然想起可以直接按short大小排序，而不是字符串
+    for (int i = 0 ; i < length - 1 ; ++i) {
+        if (unicode[i] > unicode[i + 1]) {
+            check = false;
+            break;
+        }
+    }
+    if (!check) {
+        struct temp {
+            short uni;
+            short gb;
+        };
+        temp *list = new temp[length];
+        for (int i = 0 ; i < length ; i++)
+            list[i] = {unicode[i], gbk[i]};
+        std::sort(list, list + length, [] (temp a, temp b) -> bool {
+            return a.uni < b.uni;
+        });
+        for (int i = 0 ; i < length ; ++i) {
+            unicode[i] = list[i].uni;
+            gbk[i] = list[i].gb;
+        }
+        delete[] list;
+    }
 }
 
 }
