@@ -56,7 +56,7 @@ std::string utf8Converter::toGBK (const std::string &utf8) {
         // 二分查找
         auto lower = std::lower_bound(unicode, unicode + length, uniNum);
         if (lower != unicode + length && *lower == uniNum)
-            gbkNum=gbk[lower-unicode];
+            gbkNum = gbk[lower - unicode];
         gbkStr.push_back(char((int(gbkNum >> 8))&0x00ff));
         gbkStr.push_back(char(int(gbkNum)&0x00ff));
     }
@@ -199,31 +199,22 @@ short utf8Converter::pow16 (short y) {
     return base;
 }
 void utf8Converter::sortList () {
-    bool check = true;
-    // 从小到大排序     突然想起可以直接按short大小排序，而不是字符串
-    for (int i = 0 ; i < length - 1 ; ++i) {
-        if (unicode[i] > unicode[i + 1]) {
-            check = false;
-            break;
-        }
+    struct temp {
+        short uni;
+        short gb;
+    };
+    temp *list = new temp[length];
+    for (int i = 0 ; i < length ; i++)
+        list[i] = {unicode[i], gbk[i]};
+    std::sort(list, list + length, [] (temp a, temp b) -> bool {
+        return a.uni < b.uni;
+    });
+    for (int i = 0 ; i < length ; ++i) {
+        unicode[i] = list[i].uni;
+        gbk[i] = list[i].gb;
     }
-    if (!check) {
-        struct temp {
-            short uni;
-            short gb;
-        };
-        temp *list = new temp[length];
-        for (int i = 0 ; i < length ; i++)
-            list[i] = {unicode[i], gbk[i]};
-        std::sort(list, list + length, [] (temp a, temp b) -> bool {
-            return a.uni < b.uni;
-        });
-        for (int i = 0 ; i < length ; ++i) {
-            unicode[i] = list[i].uni;
-            gbk[i] = list[i].gb;
-        }
-        delete[] list;
-    }
+    delete[] list;
+
 }
 
 }
